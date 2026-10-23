@@ -1,46 +1,45 @@
-# bookchaowalit-certs-frontend — Product brief
+# Certificates — Product truth
 
-**Slug:** `bookchaowalit-website/bookchaowalit-certs-frontend`  
-**Generated:** 2026-08-11 (bulk Book Dev closeout)  
-**Status:** starter / portfolio boundary
+> Inferred from the code and copy (no user interview). Checked against the portfolio card claims review
+> (`portfolio-site-web/docs/audits/CARD-CLAIMS-REVIEW-2026-10.md`, row `certs`, evidence Live→Prototype) on 2026-10-23.
 
-## Purpose
+## What it is
 
-Portfolio repository under Book Dev. This brief records ownership and the
-current honest status so the nested tree is not an empty shell in the task
-system.
+A single-user, browser-only credential ledger ("passport") that starts with three sample credentials.
 
-## Runnable path
+## Who it is for
 
-See `README.md` for install and run instructions when present.
+Someone who wants a private list of their certifications and study paths, and a portfolio visitor looking at a
+small, careful form-and-list UI.
 
-## Limits
+## What works today
 
-- Not claimed as production-ready unless README and tests prove it.
-- Mobile smoke / emulator acceptance is separate and toolchain-dependent.
+1. Search title, issuer or year (case-insensitive) and filter by All, Verified, In progress or Expired.
+2. Add a record (title and issuer required), toggle Verified / In progress, copy a record as text, remove a record.
+3. The ledger is saved in this browser's localStorage (`certs-v2`) and survives a reload; corrupt saved data falls
+   back to the samples instead of breaking the page.
+4. `/api/mcp` answers JSON-RPC with `get_all`, `get_by_id` and `search` over the three sample credentials, echoes the
+   request id, and returns JSON-RPC errors for unknown tools, unknown methods and bad JSON.
+5. Front-end and server errors go to Sentry (errors only, personal data stripped) when `NEXT_PUBLIC_SENTRY_DSN` is set.
 
-## Source README excerpt
+## What does not work (and must not be claimed)
 
-```
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+- No unique verification URLs, downloadable PDF copies or instant employer verification (claimed by the card;
+  removed in the 2026-10 review). "Verified" is the user's own label, not a check against any issuer.
+- No account, sync, export or sharing. The MCP route cannot see a visitor's ledger.
+- The old `data/certifications.json` was never used and has been removed.
 
-## Getting Started
+## Live URL and deploy state
 
-First, run the development server:
+- Live: https://certs.bookchaowalit.com (HTTP 200 on 2026-10-23).
+- The Vercel project `bookchaowalit-certs-frontend` is deployed only by CLI. The last production deploy is
+  2026-10-08 (CLI, commit f473e66): the CVE patch deploy did not run because the Vercel free-plan daily deploy limit
+  was hit on 2026-10-23. Its Git link names the old repository (`bookchaowalit/bookchaowalit-certs-frontend`), so a
+  push to `main` does not deploy: the CVE patch and the L2 commits stay undeployed until the coordinator redeploys
+  or the owner reconnects Vercel Git to this repository (owner action D9). Until then the live `/api/mcp` still
+  answers id 0 and "Tool called: <name>" for any tool.
+- `NEXT_PUBLIC_SENTRY_DSN` is set on the Vercel project (Sentry project `education-certs-web`, org `personal-yu0`).
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Boundaries
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize an
-```
+- Browser-only apart from the stateless `/api/mcp` route. No personal data reaches the server.
