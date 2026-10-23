@@ -1,6 +1,0 @@
-{
-  "certifications": [
-    {"id": "1", "name": "AWS Developer", "issuer": "Amazon", "date": "2024", "url": "https://aws.amazon.com"},
-    {"id": "2", "name": "Google Cloud", "issuer": "Google", "date": "2024", "url": "https://cloud.google.com"}
-  ]
-}
