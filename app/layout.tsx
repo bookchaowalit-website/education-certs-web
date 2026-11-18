@@ -1,14 +1,25 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, IBM_Plex_Mono } from "next/font/google";
+import { Geist } from "next/font/google";
 import "./globals.css";
-import { Analytics } from "@vercel/analytics/react";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 
-const passportDisplay = Cormorant_Garamond({ variable: "--font-passport-display", subsets: ["latin"] });
-const passportMono = IBM_Plex_Mono({ variable: "--font-passport-mono", subsets: ["latin"], weight: ["400", "600"] });
+// The font variable sits on <html>: the App shell tokens live on :root and read it from there.
+const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 
-export const metadata: Metadata = { title: "Passport — Credential ledger", description: "Keep a personal record of certifications and credentials.", metadataBase: new URL("https://certs.bookchaowalit.com"), alternates: { canonical: "https://certs.bookchaowalit.com" } };
+const description = "A personal ledger of certifications and study paths, kept in this browser. Verified is your own label, not an issuer check.";
+
+export const metadata: Metadata = {
+  title: "Credentials | Bookchaowalit",
+  description,
+  metadataBase: new URL("https://certs.bookchaowalit.com"),
+  alternates: { canonical: "/" },
+  openGraph: { type: "website", title: "Credentials | Bookchaowalit", description, siteName: "Bookchaowalit", url: "/" },
+  robots: { index: true, follow: true },
+};
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en" className={`${passportDisplay.variable} ${passportMono.variable}`}><body><Analytics /><SpeedInsights />{children}</body></html>;
+  return (
+    <html lang="en" className={geistSans.variable}>
+      <body>{children}</body>
+    </html>
+  );
 }

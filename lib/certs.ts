@@ -65,3 +65,10 @@ export function removeCredential(credentials: Credential[], id: string): Credent
 export function formatRecord(c: Credential): string {
   return `${c.title} — ${c.issuer} (${c.year})\nRecord: ${c.code}`;
 }
+
+/** Put a removed record back where it was (Undo). Does nothing if it is already in the ledger. */
+export function restoreCredential(credentials: Credential[], credential: Credential, index: number): Credential[] {
+  if (credentials.some((c) => c.id === credential.id)) return credentials;
+  const at = Math.max(0, Math.min(index, credentials.length));
+  return [...credentials.slice(0, at), credential, ...credentials.slice(at)];
+}

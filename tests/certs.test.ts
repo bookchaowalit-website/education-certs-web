@@ -48,3 +48,13 @@ describe("ledger operations", () => {
     expect(formatRecord(SEED[0])).toBe("AWS Solutions Architect — Amazon Web Services (2024)\nRecord: AWS-SAA-24");
   });
 });
+
+describe("restoreCredential", () => {
+  it("puts a record back at its old index, clamps the index, and never duplicates", async () => {
+    const { restoreCredential } = await import("@/lib/certs");
+    const [a, b, c] = SEED;
+    expect(restoreCredential([a, c], b, 1)).toEqual([a, b, c]);
+    expect(restoreCredential([a], c, 9)).toEqual([a, c]);
+    expect(restoreCredential([a, b], b, 0)).toEqual([a, b]);
+  });
+});
