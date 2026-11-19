@@ -2,7 +2,7 @@
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { AppFoot, AppTop, ListButton, Pill, PlusIcon, type Tone } from "@/components/app-shell";
-import { STATUSES, addCredential, filterCredentials, formatRecord, removeCredential, restoreCredential, toggleVerified, type Credential, type Draft, type Status, type StatusFilter } from "@/lib/certs";
+import { STATUSES, addCredential, filterCredentials, formatRecord, removeCredential, restoreCredential, toggleVerified, type Credential, type Draft, type RemovedPlace, type Status, type StatusFilter } from "@/lib/certs";
 import { useLedger } from "@/lib/ledger-store";
 
 // The credential ledger on the App shell: lists by state on the left, one list on the right, a composer
@@ -11,7 +11,9 @@ import { useLedger } from "@/lib/ledger-store";
 const TONE: Record<Status, Tone> = { Verified: "green", "In progress": "amber", Expired: "grey" };
 const EMPTY_DRAFT: Draft = { title: "", issuer: "", year: String(new Date().getFullYear()), status: "In progress" };
 // index: where it sat in the stored list when removed. nextShown / prevShown: the rows shown around it, for focus.
-type RemovedEntry = { credential: Credential; index: number; nextShown?: string; prevShown?: string };
+// index / place: where it sat in the ledger when removed (neighbours, and the ids listed then); nextShown /
+// prevShown: the rows shown around it, for focus.
+type RemovedEntry = { credential: Credential; index: number; place: RemovedPlace; nextShown?: string; prevShown?: string };
 type RemovedBatch = { removals: RemovedEntry[]; viaKeyboard: boolean };
 const removedLabel = (removals: RemovedEntry[]) => (removals.length === 1 ? `Removed “${removals[0].credential.title}”` : `Removed ${removals.length} records`);
 
@@ -96,7 +98,8 @@ export default function Home() {
     const index = credentials.findIndex((c) => c.id === credential.id);
     setCredentials((current) => removeCredential(current, credential.id));
     const shownAt = visible.findIndex((item) => item.id === credential.id);
-    const removal: RemovedEntry = { credential, index, nextShown: visible[shownAt + 1]?.id, prevShown: shownAt > 0 ? visible[shownAt - 1].id : undefined };
+    const place: RemovedPlace = { prevId: credentials[index - 1]?.id, nextId: credentials[index + 1]?.id, knownIds: credentials.filter((c) => c.id !== credential.id).map((c) => c.id) };
+    const removal: RemovedEntry = { credential, index, place, nextShown: visible[shownAt + 1]?.id, prevShown: shownAt > 0 ? visible[shownAt - 1].id : undefined };
     const removals = [...(removedRef.current?.removals ?? []), removal];
     setRemoved({ removals, viaKeyboard });
     setAnnouncement(removals.length === 1 ? `Removed “${credential.title}”. Undo is available for a few seconds.` : `Removed ${removals.length} records. Undo is available for a few seconds.`);
@@ -112,7 +115,7 @@ export default function Home() {
     const removals = removedRef.current?.removals;
     if (!removals?.length) return;
     // Latest removal first, so each index refers to the list as it was just before that removal.
-    setCredentials((current) => removals.reduceRight((list, { credential, index }) => restoreCredential(list, credential, index), current));
+    setCredentials((current) => removals.reduceRight((list, { credential, index, place }) => restoreCredential(list, credential, index, place), current));
     const latest = removals[removals.length - 1].credential;
     setAnnouncement(removals.length === 1 ? `Restored “${latest.title}”.` : `Restored ${removals.length} records.`);
     // Undone: back to the restored row the user removed last.

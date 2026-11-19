@@ -66,9 +66,23 @@ export function formatRecord(c: Credential): string {
   return `${c.title} — ${c.issuer} (${c.year})\nRecord: ${c.code}`;
 }
 
-/** Put a removed record back where it was (Undo). Does nothing if it is already in the ledger. */
-export function restoreCredential(credentials: Credential[], credential: Credential, index: number): Credential[] {
+/** Where a record sat when it was removed: its neighbours' ids, and every id in the ledger at that moment. */
+export type RemovedPlace = { prevId?: string; nextId?: string; knownIds?: string[] };
+
+/**
+ * Put a removed record back where it was (Undo). Does nothing if it is already in the ledger. The place is found
+ * from its old neighbours when they are still listed; else from the old index, counted below records added on top
+ * since the removal (ids not in `knownIds`), so Undo never reorders records added meanwhile.
+ */
+export function restoreCredential(credentials: Credential[], credential: Credential, index: number, place: RemovedPlace = {}): Credential[] {
   if (credentials.some((c) => c.id === credential.id)) return credentials;
-  const at = Math.max(0, Math.min(index, credentials.length));
+  const prevAt = place.prevId ? credentials.findIndex((c) => c.id === place.prevId) : -1;
+  const nextAt = place.nextId ? credentials.findIndex((c) => c.id === place.nextId) : -1;
+  let addedOnTop = 0;
+  if (place.knownIds) {
+    const known = new Set(place.knownIds);
+    while (addedOnTop < credentials.length && !known.has(credentials[addedOnTop].id)) addedOnTop += 1;
+  }
+  const at = prevAt >= 0 ? prevAt + 1 : nextAt >= 0 ? nextAt : Math.max(0, Math.min(index + addedOnTop, credentials.length));
   return [...credentials.slice(0, at), credential, ...credentials.slice(at)];
 }

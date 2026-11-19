@@ -57,4 +57,14 @@ describe("restoreCredential", () => {
     expect(restoreCredential([a], c, 9)).toEqual([a, c]);
     expect(restoreCredential([a, b], b, 0)).toEqual([a, b]);
   });
+
+  it("goes back between its old neighbours, below records added after the removal", async () => {
+    const { restoreCredential } = await import("@/lib/certs");
+    const [a, b, c] = SEED;
+    const x = { ...a, id: "x", title: "X" };
+    // [A, B, C]: B removed (between A and C), then X added on top: Undo gives [X, A, B, C], not [X, B, A, C].
+    expect(restoreCredential([x, a, c], b, 1, { prevId: a.id, nextId: c.id, knownIds: [a.id, c.id] })).toEqual([x, a, b, c]);
+    // Everything removed, then X added: with no neighbour left, the old index counts below X.
+    expect(restoreCredential([x], a, 0, { knownIds: [] })).toEqual([x, a]);
+  });
 });
