@@ -29,6 +29,10 @@ small, careful form-and-list UI.
 - No account, sync, export or sharing. The MCP route cannot see a visitor's ledger.
 - The old `data/certifications.json` was never used and has been removed.
 
+## Known limits
+
+- Undo after another tab deleted both of a record's old neighbours (e.g. `A, B, C, D, E`: B removed here, A and C removed in another tab) falls back to the old index and can restore B below D (`D, B, E` instead of `B, D, E`); multi-tab case, frozen app, not fixed (Codex report -81d2a2c5d1).
+
 ## Live URL and deploy state
 
 - Live: https://certs.bookchaowalit.com (HTTP 200 on 2026-10-23).
